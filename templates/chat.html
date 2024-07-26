@@ -14,10 +14,10 @@
                 <div class="card">
                     <div class="card-body">
                         <div id="messages" class="mb-3"></div>
-                        <div class="form-group">
+                        <div class="form-group lc-input-container">
                             <textarea id="message" class="form-control" placeholder="Type message..."></textarea>
+                            <button id="lc-send-button" class="btn btn-primary">Send</button>
                         </div>
-                        <button id="lc-send-button" class="btn btn-primary btn-block">Send</button>
                     </div>
                 </div>
             </div>
@@ -28,6 +28,7 @@
         $(document).ready(function(){
             var socket = io.connect('http://' + document.domain + ':' + location.port);
             var sender = localStorage.getItem('username');
+            var lastSender = null;
 
             if (!sender) {
                 window.location.href = '/';
@@ -43,16 +44,29 @@
             function loadMessages() {
                 var messages = JSON.parse(localStorage.getItem('messages')) || [];
                 messages.forEach(function(data) {
-                    var formattedTime = new Date(data.timestamp).toLocaleTimeString();
-
-                    var messageDiv = $('<div>').addClass('alert alert-secondary');
-                    var senderDiv = $('<div>').addClass('font-weight-bold').text(data.sender);
-                    var timestampDiv = $('<div>').addClass('text-muted small').text(formattedTime);
-                    var contentDiv = $('<div>').text(data.message);
-
-                    messageDiv.append(senderDiv, timestampDiv, contentDiv);
-                    $('#messages').append(messageDiv);
+                    appendMessage(data, false);
                 });
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+
+            function appendMessage(data, save) {
+                var formattedTime = new Date(data.timestamp).toLocaleTimeString();
+                var messageClass = data.sender === sender ? 'own' : 'other';
+                var messageDiv = $('<div>').addClass('lc-message ' + messageClass).text(data.message);
+                var timestampDiv = $('<div>').addClass('lc-timestamp').text(formattedTime);
+                
+                if (lastSender !== data.sender) {
+                    messageDiv.prepend($('<div>').addClass('font-weight-bold').text(data.sender));
+                    lastSender = data.sender;
+                }
+                
+                messageDiv.append(timestampDiv);
+
+                $('#messages').append(messageDiv);
+
+                if (save) {
+                    saveMessage(data);
+                }
                 window.scrollTo(0, document.body.scrollHeight);
             }
 
@@ -66,22 +80,19 @@
                     };
                     socket.emit('chat message', messageData);
                     $('#message').val('').focus();
+                    appendMessage(messageData, true);
+                }
+            });
+
+            $('#message').keypress(function(event){
+                if(event.which == 13 && !event.shiftKey){
+                    event.preventDefault();
+                    $('#lc-send-button').click();
                 }
             });
 
             socket.on('chat message', function(data){
-                saveMessage(data);
-
-                var formattedTime = new Date(data.timestamp).toLocaleTimeString();
-
-                var messageDiv = $('<div>').addClass('alert alert-secondary');
-                var senderDiv = $('<div>').addClass('font-weight-bold').text(data.sender);
-                var timestampDiv = $('<div>').addClass('text-muted small').text(formattedTime);
-                var contentDiv = $('<div>').text(data.message);
-
-                messageDiv.append(senderDiv, timestampDiv, contentDiv);
-                $('#messages').append(messageDiv);
-                window.scrollTo(0, document.body.scrollHeight);
+                appendMessage(data, true);
             });
 
             loadMessages();
