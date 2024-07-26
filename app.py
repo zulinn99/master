@@ -4,7 +4,7 @@ import time
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")  # Allow CORS for all origins
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def login():
