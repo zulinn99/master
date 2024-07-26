@@ -10,6 +10,14 @@ body {
     padding: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    height: 80vh; /* Limita a altura do chat */
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
 }
 
 .lc-message {
@@ -18,12 +26,14 @@ body {
     border-radius: 10px;
     display: inline-block;
     max-width: 80%;
+    word-wrap: break-word;
 }
 
 .lc-message.own {
     background-color: #007bff;
     color: #ffffff;
     align-self: flex-end;
+    text-align: right;
 }
 
 .lc-message.other {
@@ -45,7 +55,7 @@ body {
 
 .lc-input-container {
     display: flex;
-    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 textarea {
