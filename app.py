@@ -4,7 +4,7 @@ import time
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")  # Allow CORS for all origins
 
 @app.route('/')
 def login():
@@ -20,4 +20,4 @@ def handle_chat_message(data):
     emit('chat message', data, broadcast=True)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0', port=5000)
